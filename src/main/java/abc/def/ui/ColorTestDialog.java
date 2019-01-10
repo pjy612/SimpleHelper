@@ -16,7 +16,7 @@ public class ColorTestDialog extends JDialog {
     public ColorTestDialog() {
         setContentPane(contentPane);
         setModal(true);
-
+        setResizable(false);
         refreshButton.addActionListener(e -> {
             String titleColor = titleColorTextField.getText();
             String contentColor = contentColorTextField.getText();

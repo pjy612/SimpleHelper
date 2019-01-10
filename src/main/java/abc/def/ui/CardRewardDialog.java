@@ -3,10 +3,10 @@ package abc.def.ui;
 import abc.def.SimpleHelper;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
+import com.megacrit.cardcrawl.helpers.CardLibrary;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.concurrent.locks.Lock;
 
 public class CardRewardDialog extends JDialog {
     final static private String CONTENT_COLOR = "000000";
@@ -21,7 +21,7 @@ public class CardRewardDialog extends JDialog {
         setContentPane(contentPane);
         setModal(false);
         setDefaultCloseOperation(HIDE_ON_CLOSE);
-
+        setResizable(false);
         refreshButton.addActionListener(e -> {
             allCardComboBox.removeAllItems();
             SimpleHelper.toChangeCard = null;
@@ -40,44 +40,58 @@ public class CardRewardDialog extends JDialog {
         changeButton.addActionListener(e -> {
             int index = allCardComboBox.getSelectedIndex();
             if (index >= 0) {
-                int[] sizes = new int[]{AbstractDungeon.commonCardPool.size(), AbstractDungeon.uncommonCardPool.size(), AbstractDungeon.rareCardPool.size()};
-                if (index < sizes[0]) {
-                    SimpleHelper.toChangeCard = AbstractDungeon.commonCardPool.group.get(index).makeCopy();
-                } else if (index < sizes[0] + sizes[1]) {
-                    SimpleHelper.toChangeCard = AbstractDungeon.uncommonCardPool.group.get(index - sizes[0]).makeCopy();
-                } else if (index < sizes[0] + sizes[1] + sizes[2]) {
-                    SimpleHelper.toChangeCard = AbstractDungeon.rareCardPool.group.get(index - sizes[0] - sizes[1]).makeCopy();
-                }
-                if (SimpleHelper.toChangeCard != null) {
-                    if (!AbstractDungeon.combatRewardScreen.rewards.isEmpty()) {
-                        SimpleHelper.adjustRewardForSelect(AbstractDungeon.combatRewardScreen.rewards);
-                        AbstractDungeon.cardRewardScreen.update();
+                SimpleHelper.queue.offer(() -> {
+                    int[] sizes = new int[]{AbstractDungeon.commonCardPool.size(), AbstractDungeon.uncommonCardPool.size(), AbstractDungeon.rareCardPool.size()};
+                    AbstractCard card = null;
+                    if (index < sizes[0]) {
+                        card = AbstractDungeon.commonCardPool.group.get(index);
+                    } else if (index < sizes[0] + sizes[1]) {
+                        card = AbstractDungeon.uncommonCardPool.group.get(index - sizes[0]);
+                    } else if (index < sizes[0] + sizes[1] + sizes[2]) {
+                        card = AbstractDungeon.rareCardPool.group.get(index - sizes[0] - sizes[1]);
                     }
+                    if (card != null) {
+                        SimpleHelper.toChangeCard = CardLibrary.getCopy(card.cardID, 100, 100);
+                        if (!AbstractDungeon.combatRewardScreen.rewards.isEmpty()) {
+                            SimpleHelper.adjustRewardForSelect(AbstractDungeon.combatRewardScreen.rewards);
+                            AbstractDungeon.cardRewardScreen.update();
+                        }
+                    }
+                });
+                //有消息入队后激活轮询线程
+                synchronized (Lock.class)
+                {
+                    Lock.class.notify();
                 }
             }
         });
         addButton.addActionListener(e -> {
-            if (AbstractDungeon.screen == AbstractDungeon.CurrentScreen.MASTER_DECK_VIEW && AbstractDungeon.isScreenUp)
+            if (AbstractDungeon.screen == AbstractDungeon.CurrentScreen.MASTER_DECK_VIEW && AbstractDungeon.isScreenUp) {
                 return;
-            AbstractCard card = null;
+            }
             int index = allCardComboBox.getSelectedIndex();
             if (index >= 0) {
-                int[] sizes = new int[]{AbstractDungeon.commonCardPool.size(), AbstractDungeon.uncommonCardPool.size(), AbstractDungeon.rareCardPool.size()};
-                if (index < sizes[0]) {
-                    card = AbstractDungeon.commonCardPool.group.get(index).makeCopy();
-                } else if (index < sizes[0] + sizes[1]) {
-                    card = AbstractDungeon.uncommonCardPool.group.get(index - sizes[0]).makeCopy();
-                } else if (index < sizes[0] + sizes[1] + sizes[2]) {
-                    card = AbstractDungeon.rareCardPool.group.get(index - sizes[0] - sizes[1]).makeCopy();
-                }
-                if (card != null) {
-                    if (AbstractDungeon.player != null) {
-                        if (card.canUpgrade()) {
-                            card.upgrade();
-                        }
-                        AbstractDungeon.player.masterDeck.addToTop(card);
+                SimpleHelper.queue.offer(() -> {
+                    AbstractCard card = null;
+                    int[] sizes = new int[]{AbstractDungeon.commonCardPool.size(), AbstractDungeon.uncommonCardPool.size(), AbstractDungeon.rareCardPool.size()};
+                    if (index < sizes[0]) {
+                        card = AbstractDungeon.commonCardPool.group.get(index);
+                    } else if (index < sizes[0] + sizes[1]) {
+                        card = AbstractDungeon.uncommonCardPool.group.get(index - sizes[0]);
+                    } else if (index < sizes[0] + sizes[1] + sizes[2]) {
+                        card = AbstractDungeon.rareCardPool.group.get(index - sizes[0] - sizes[1]);
                     }
-                }
+                    if (card != null) {
+                        if (AbstractDungeon.player != null) {
+                            AbstractCard finalCard = card;
+                            AbstractCard finalCard1 = CardLibrary.getCopy(finalCard.cardID, 100, 100);
+                            if (finalCard1.canUpgrade()) {
+                                finalCard1.upgrade();
+                            }
+                            AbstractDungeon.player.masterDeck.addToTop(finalCard1);
+                        }
+                    }
+                });
             }
         });
     }

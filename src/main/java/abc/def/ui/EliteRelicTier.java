@@ -20,7 +20,7 @@ public class EliteRelicTier extends JDialog {
         setTitle("Elite Relic Tier");
         setModal(false);
         setDefaultCloseOperation(HIDE_ON_CLOSE);
-
+        setResizable(false);
         ItemListener itemListener = e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 JRadioButton radioButton = (JRadioButton) e.getItem();

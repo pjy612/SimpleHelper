@@ -22,7 +22,7 @@ public class CardManagerDialog extends JDialog {
         setContentPane(contentPane);
         setModal(false);
         setDefaultCloseOperation(HIDE_ON_CLOSE);
-
+        setResizable(false);
         refreshButton.addActionListener(e -> {
             refreshList();
         });

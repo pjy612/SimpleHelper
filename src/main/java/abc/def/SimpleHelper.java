@@ -17,20 +17,24 @@ import com.megacrit.cardcrawl.powers.WeakPower;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import com.megacrit.cardcrawl.rewards.RewardItem;
 import com.megacrit.cardcrawl.ui.campfire.AbstractCampfireOption;
-import org.apache.commons.codec.binary.StringUtils;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
-
-import static com.megacrit.cardcrawl.dungeons.AbstractDungeon.*;
 
 public class SimpleHelper {
     static private HelperUIThread uiThread = null;
+    //    static private PollingThread pollingThread = null;
     static public AbstractCard toChangeCard = null;
     static public AbstractRelic.RelicTier nextEliteRelicTier = null;
     static public String selectRelic = null;
+    static public boolean loaded = false;
 
     static public void switchUI() {
+//        if (pollingThread == null) {
+//            pollingThread = new PollingThread();
+//            pollingThread.start();
+//        }
         if (uiThread == null) {
             uiThread = new HelperUIThread();
             uiThread.start();
@@ -38,6 +42,15 @@ public class SimpleHelper {
             uiThread.switchDisplay();
         }
     }
+
+    public static Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
+
+    static public void doAction() {
+        while (!queue.isEmpty()) {
+            queue.poll().run();
+        }
+    }
+
 
     static public void adjustCardReward(ArrayList<AbstractCard> rewardList) {
         if (toChangeCard != null) {

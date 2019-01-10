@@ -23,7 +23,6 @@ public class HelperUI {
 
     public HelperUI() {
         super();
-
         cardRewardDialog = new CardRewardDialog();
         cardRewardDialog.pack();
         cardManagerDialog = new CardManagerDialog();
@@ -66,6 +65,7 @@ public class HelperUI {
         frame.setContentPane(new HelperUI().rootPanel);
         frame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         frame.pack();
+        frame.setResizable(false);
         frame.setVisible(true);
     }
 }

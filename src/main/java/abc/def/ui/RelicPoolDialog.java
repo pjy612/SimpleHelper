@@ -9,7 +9,6 @@ import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class RelicPoolDialog extends JDialog {
     final static private String TITLE_COLOR = "339933";
@@ -31,7 +30,7 @@ public class RelicPoolDialog extends JDialog {
         setContentPane(contentPane);
         setModal(false);
         setDefaultCloseOperation(HIDE_ON_CLOSE);
-
+        setResizable(false);
         ItemListener radioButtonItemListener = e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 SimpleHelper.resetRelicPool();
