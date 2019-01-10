@@ -15,6 +15,7 @@ public class CardRewardDialog extends JDialog {
     private JButton refreshButton;
     private JButton changeButton;
     private JButton addButton;
+    private JLabel tip;
 
     public CardRewardDialog() {
         setTitle("Card Reward");
@@ -22,6 +23,7 @@ public class CardRewardDialog extends JDialog {
         setModal(false);
         setDefaultCloseOperation(HIDE_ON_CLOSE);
         setResizable(false);
+        tip.setVisible(false);
         refreshButton.addActionListener(e -> {
             allCardComboBox.removeAllItems();
             SimpleHelper.toChangeCard = null;
@@ -66,9 +68,9 @@ public class CardRewardDialog extends JDialog {
             }
         });
         addButton.addActionListener(e -> {
-            if (AbstractDungeon.screen == AbstractDungeon.CurrentScreen.MASTER_DECK_VIEW && AbstractDungeon.isScreenUp) {
-                return;
-            }
+//            if (AbstractDungeon.screen == AbstractDungeon.CurrentScreen.MASTER_DECK_VIEW && AbstractDungeon.isScreenUp) {
+//                return;
+//            }
             int index = allCardComboBox.getSelectedIndex();
             if (index >= 0) {
                 SimpleHelper.queue.offer(() -> {

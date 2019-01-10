@@ -1,14 +1,13 @@
 package abc.def.ui;
 
+import abc.def.SimpleHelper;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.OptionalInt;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class CardManagerDialog extends JDialog {
     final static private String CONTENT_COLOR = "000000";
@@ -16,6 +15,7 @@ public class CardManagerDialog extends JDialog {
     private JButton refreshButton;
     private JButton removeButton;
     private JList cardList;
+    private JLabel tip;
 
     public CardManagerDialog() {
         setTitle("Card Manager");
@@ -23,43 +23,45 @@ public class CardManagerDialog extends JDialog {
         setModal(false);
         setDefaultCloseOperation(HIDE_ON_CLOSE);
         setResizable(false);
+        tip.setVisible(false);
         refreshButton.addActionListener(e -> {
             refreshList();
         });
 
         removeButton.addActionListener(e -> {
-            if (AbstractDungeon.screen == AbstractDungeon.CurrentScreen.MASTER_DECK_VIEW && AbstractDungeon.isScreenUp)
-                return;
+//            if (AbstractDungeon.screen == AbstractDungeon.CurrentScreen.MASTER_DECK_VIEW && AbstractDungeon.isScreenUp){
+//                return;
+//            }
             int[] indexs = cardList.getSelectedIndices();
             if (indexs.length > 0) {
-                ArrayList<AbstractCard> tmplist = new ArrayList<>();
-                OptionalInt max = Arrays.stream(indexs).max();
-                int idx = max.getAsInt();
-                for (int index :
-                        indexs) {
-                    if (index >= 0 && index < AbstractDungeon.player.masterDeck.group.size()) {
-                        AbstractCard c = AbstractDungeon.player.masterDeck.group.get(index);
-                        if (c != null) {
-                            tmplist.add(c);
+                SimpleHelper.queue.add(() -> {
+                    ArrayList<AbstractCard> tmplist = new ArrayList<>();
+                    OptionalInt max = Arrays.stream(indexs).max();
+                    int idx = max.getAsInt();
+                    for (int index :
+                            indexs) {
+                        if (index >= 0 && index < AbstractDungeon.player.masterDeck.group.size()) {
+                            AbstractCard c = AbstractDungeon.player.masterDeck.group.get(index);
+                            if (c != null) {
+                                tmplist.add(c);
+                            }
                         }
                     }
-                }
-                if (tmplist.size() > 0) {
-                    for (AbstractCard c : tmplist) {
-                        AbstractDungeon.player.masterDeck.group.remove(c);
+                    if (tmplist.size() > 0) {
+                        for (AbstractCard c : tmplist) {
+                            AbstractDungeon.player.masterDeck.group.remove(c);
+                        }
                     }
-                }
-
-                refreshList();
-                if (idx > 0) {
-                    if (idx < AbstractDungeon.player.masterDeck.group.size()) {
-                        cardList.setSelectedIndex(idx - 1);
-                    } else {
-                        cardList.setSelectedIndex(AbstractDungeon.player.masterDeck.group.size() - 1);
+                    refreshList();
+                    if (idx > 0) {
+                        if (idx < AbstractDungeon.player.masterDeck.group.size()) {
+                            cardList.setSelectedIndex(idx - 1);
+                        } else {
+                            cardList.setSelectedIndex(AbstractDungeon.player.masterDeck.group.size() - 1);
+                        }
                     }
-                }
+                });
             }
-
         });
     }
 
